@@ -20,6 +20,7 @@ string currCode = "";
 string beginCode = "";
 vector<string> allLines;
 int checkCommas = 0;
+string backTrack = "";
 
 enum Type { Integer, Array };
 struct Symbol {
@@ -171,6 +172,10 @@ statement SEMICOLON
 statement: 
 IDENT ASSIGN symbol ADD symbol
 {
+  backTrack = $1;
+  beginCode = (". temp");
+  beginCode += ("\n");
+  allLines.push_back(beginCode);
   beginCode = ("+ temp");
   beginCode += (", ");
   currCode = beginCode + currCode + "\n";
@@ -180,6 +185,10 @@ IDENT ASSIGN symbol ADD symbol
 }
 | IDENT ASSIGN symbol SUB symbol
 {
+  backTrack = $1;
+  beginCode = (". temp");
+  beginCode += ("\n");
+  allLines.push_back(beginCode);
   beginCode = ("- ");
   beginCode += ("temp");
   beginCode += (", ");
@@ -189,6 +198,10 @@ IDENT ASSIGN symbol ADD symbol
 }
 | IDENT ASSIGN symbol MULT symbol
 {
+  backTrack = $1;
+  beginCode = (". temp");
+  beginCode += ("\n");
+  allLines.push_back(beginCode);
   beginCode = ("* ");
   beginCode += ("temp");
   beginCode += (", ");
@@ -198,6 +211,10 @@ IDENT ASSIGN symbol ADD symbol
 }
 | IDENT ASSIGN symbol DIV symbol
 {
+  backTrack = $1;
+  beginCode = (". temp");
+  beginCode += ("\n");
+  allLines.push_back(beginCode);
   beginCode = ("/ ");
   beginCode += ("temp");
   beginCode += (", ");
@@ -207,6 +224,10 @@ IDENT ASSIGN symbol ADD symbol
 }
 | IDENT ASSIGN symbol MOD symbol
 {
+  backTrack = $1;
+  beginCode = (". temp");
+  beginCode += ("\n");
+  allLines.push_back(beginCode);
   beginCode = ("%% ");
   beginCode += ("temp");
   beginCode += (", ");
@@ -227,8 +248,14 @@ IDENT ASSIGN symbol ADD symbol
 
 | WRITE IDENT
 {
+  currCode += ("= " + backTrack + ", temp");
+  currCode += ("\n");
+  allLines.push_back(currCode);
+  currCode = "";
+  count_names++;
   currCode += (".> ");
-  currCode += ("IDENT\n");
+  currCode += (backTrack);
+  currCode += ("\n");
   allLines.push_back(currCode);
   currCode = "";
 }
