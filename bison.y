@@ -15,12 +15,13 @@ extern int currLine;
 char *identToken;
 int numberToken;
 
-int  count_names = 0;
+int count_names = 0;
 string currCode = "";
 string beginCode = "";
 vector<string> allLines;
 int checkCommas = 0;
 string backTrack = "";
+string tempVar = "";
 
 enum Type { Integer, Array };
 struct Symbol {
@@ -49,6 +50,40 @@ bool find(std::string &value) {
     }
   }
   return false;
+}
+
+/*
+bool find_variable(std::string& var)
+{
+  for (int i=0; i < symbol_table.size(); ++i)
+  {
+    for (int j=0; j < symbol_table[i].declarations.size(); ++j)
+    {
+      if (symbol_table[i].declarations[j] == var)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+*/
+
+int temp_count = 0;
+std::string gen_temp_var()
+{
+  std::string temp_var;
+  char tempstr[40] = "";
+  sprintf(tempstr, "temp%d", temp_count++);
+  temp_var = tempstr;
+
+/*  
+  do {
+    count_names++;
+    temp_var = "temp" + std::to_string(count_names);
+  } while (find_variable(temp_var));
+*/  
+  return temp_var;
 }
 
 void add_function_to_symbol_table(std::string &value) {
@@ -173,10 +208,13 @@ statement:
 IDENT ASSIGN symbol ADD symbol
 {
   backTrack = $1;
-  beginCode = (". temp");
+  tempVar = gen_temp_var();
+  beginCode = (". ");
+  beginCode += tempVar;
   beginCode += ("\n");
   allLines.push_back(beginCode);
-  beginCode = ("+ temp");
+  beginCode = ("+ ");
+  beginCode += tempVar;
   beginCode += (", ");
   currCode = beginCode + currCode + "\n";
   allLines.push_back(currCode);
@@ -186,11 +224,13 @@ IDENT ASSIGN symbol ADD symbol
 | IDENT ASSIGN symbol SUB symbol
 {
   backTrack = $1;
-  beginCode = (". temp");
+  tempVar = gen_temp_var();
+  beginCode = (". ");
+  beginCode += tempVar;
   beginCode += ("\n");
   allLines.push_back(beginCode);
   beginCode = ("- ");
-  beginCode += ("temp");
+  beginCode += tempVar;
   beginCode += (", ");
   currCode = beginCode + currCode + "\n";
   allLines.push_back(currCode);
@@ -199,11 +239,13 @@ IDENT ASSIGN symbol ADD symbol
 | IDENT ASSIGN symbol MULT symbol
 {
   backTrack = $1;
-  beginCode = (". temp");
+  tempVar = gen_temp_var();
+  beginCode = (". ");
+  beginCode += tempVar;
   beginCode += ("\n");
   allLines.push_back(beginCode);
   beginCode = ("* ");
-  beginCode += ("temp");
+  beginCode += tempVar;
   beginCode += (", ");
   currCode = beginCode + currCode + "\n";
   allLines.push_back(currCode);
@@ -212,11 +254,13 @@ IDENT ASSIGN symbol ADD symbol
 | IDENT ASSIGN symbol DIV symbol
 {
   backTrack = $1;
-  beginCode = (". temp");
+  tempVar = gen_temp_var();
+  beginCode = (". ");
+  beginCode += tempVar;
   beginCode += ("\n");
   allLines.push_back(beginCode);
   beginCode = ("/ ");
-  beginCode += ("temp");
+  beginCode += tempVar;
   beginCode += (", ");
   currCode = beginCode + currCode + "\n";
   allLines.push_back(currCode);
@@ -225,11 +269,13 @@ IDENT ASSIGN symbol ADD symbol
 | IDENT ASSIGN symbol MOD symbol
 {
   backTrack = $1;
-  beginCode = (". temp");
+  tempVar = gen_temp_var();
+  beginCode = (". ");
+  beginCode += tempVar;
   beginCode += ("\n");
   allLines.push_back(beginCode);
   beginCode = ("%% ");
-  beginCode += ("temp");
+  beginCode += tempVar;
   beginCode += (", ");
   currCode = beginCode + currCode + "\n";
   allLines.push_back(currCode);
@@ -248,11 +294,11 @@ IDENT ASSIGN symbol ADD symbol
 
 | WRITE IDENT
 {
-  currCode += ("= " + backTrack + ", temp");
+  currCode += ("= " + backTrack + ", ");
+  currCode += tempVar;
   currCode += ("\n");
   allLines.push_back(currCode);
   currCode = "";
-  count_names++;
   currCode += (".> ");
   currCode += (backTrack);
   currCode += ("\n");
