@@ -1,8 +1,12 @@
 %{
 #include<stdio.h>
+#include<stdlib.h>
+
 #include<string>
 #include<vector>
 #include<string.h>
+
+using namespace std;
 
 extern int yylex(void);
 void yyerror(const char *msg);
@@ -10,8 +14,12 @@ extern int currLine;
 
 char *identToken;
 int numberToken;
-int  count_names = 0;
 
+int  count_names = 0;
+string currCode = "";
+string beginCode = "";
+vector<string> allLines;
+int checkCommas = 0;
 
 enum Type { Integer, Array };
 struct Symbol {
@@ -92,17 +100,17 @@ void print_symbol_table(void) {
 
 prog_start: functions
 {
-  printf("prog_start -> functions\n");
+  //
 }
 
 functions: 
 /* epsilon */
 { 
-  printf("functions -> epsilon\n");
+  //
 }
 | function functions
 {
-  printf("functions -> function functions\n");
+  //
 };
 
 function: FUNCTION IDENT 
@@ -117,23 +125,32 @@ function: FUNCTION IDENT
 	BEGIN_LOCALS declarations END_LOCALS
 	BEGIN_BODY statements END_BODY
 {
-  printf("function -> FUNCTION IDENT ; BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY\n");
+  printf("function %s\n", $2);
+  for(int i = 0; i < allLines.size(); ++i) {
+    printf(allLines.at(i).c_str());
+  }
+  printf("endfunc\n");
+  printf("\n");
 };
 
 declarations: 
 /* epsilon */
 {
-  printf("declarations -> epsilon\n");
+  //
 }
 | declaration SEMICOLON declarations
 {
-  printf("declarations -> declaration ; declarations\n");
+  //
 };
 
 declaration: 
 	IDENT COLON INTEGER
 {
-  printf("declaration -> IDENT : integer\n");
+  currCode += (". ");
+  currCode += ("%s", $1);
+  currCode += ("\n");
+  allLines.push_back(currCode);
+  currCode = "";
 
   // add the variable to the symbol table.
   std::string value = $1;
@@ -144,55 +161,96 @@ declaration:
 statements: 
 statement SEMICOLON
 {
-  printf("statements -> statement ;\n");
+  //
 }
 | statement SEMICOLON statements
 {
-  printf("statements -> statement ; statements\n");
+  //
 };
 
 statement: 
 IDENT ASSIGN symbol ADD symbol
 {
-  printf("statement -> IDENT := symbol + symbol\n");
+  beginCode = ("+ temp");
+  beginCode += (", ");
+  currCode = beginCode + currCode + "\n";
+  allLines.push_back(currCode);
+  currCode = "";
+  beginCode = "";
 }
 | IDENT ASSIGN symbol SUB symbol
 {
-  printf("statement -> IDENT := symbol - symbol\n");
+  beginCode = ("- ");
+  beginCode += ("temp");
+  beginCode += (", ");
+  currCode = beginCode + currCode + "\n";
+  allLines.push_back(currCode);
+  currCode = "";
 }
 | IDENT ASSIGN symbol MULT symbol
 {
-  printf("statement -> IDENT := symbol * symbol\n");
+  beginCode = ("* ");
+  beginCode += ("temp");
+  beginCode += (", ");
+  currCode = beginCode + currCode + "\n";
+  allLines.push_back(currCode);
+  currCode = "";
 }
 | IDENT ASSIGN symbol DIV symbol
 {
-  printf("statement -> IDENT := symbol / symbol\n");
+  beginCode = ("/ ");
+  beginCode += ("temp");
+  beginCode += (", ");
+  currCode = beginCode + currCode + "\n";
+  allLines.push_back(currCode);
+  currCode = "";
 }
 | IDENT ASSIGN symbol MOD symbol
 {
-  printf("statement -> IDENT := symbol %% symbol\n");
+  beginCode = ("%% ");
+  beginCode += ("temp");
+  beginCode += (", ");
+  currCode = beginCode + currCode + "\n";
+  allLines.push_back(currCode);
+  currCode = "";
 }
 
 | IDENT ASSIGN symbol
 {
-  printf("statement -> IDENT := symbol\n");
+  beginCode = ("= ");
+  beginCode += ("%s", $1);
+  beginCode += (", ");
+  currCode = beginCode + currCode + "\n";
+  allLines.push_back(currCode);
+  currCode = "";
 }
 
 | WRITE IDENT
 {
-  printf("statement -> WRITE IDENT\n");
+  currCode += (".> ");
+  currCode += ("IDENT\n");
+  allLines.push_back(currCode);
+  currCode = "";
 }
-;
+
 
 symbol: 
 IDENT 
 {
-  printf("symbol -> IDENT %s\n", $1); 
+  currCode += ("%s", $1);
+  if(checkCommas == 1) {
+    checkCommas = 0;
+  }
+  else {
+    checkCommas++;
+    currCode += (", ");
+  }
   $$ = $1; 
 }
 | NUMBER 
 {
-  printf("symbol -> NUMBER %s\n", $1);
+  currCode += ("%s", $1);
+  checkCommas = 0;
   $$ = $1; 
 }
 
